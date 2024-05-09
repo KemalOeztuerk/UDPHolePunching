@@ -1,2 +1,2 @@
 # UDPHolePunching
-AnotherUDP hole punching with C
+Another UDP hole punching with C
