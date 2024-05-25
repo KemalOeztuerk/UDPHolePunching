@@ -8,17 +8,15 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <pthread.h>
 
 #define SERVPORT "9999"
 
 
-int main(int argc, char *argv[]){
-  
- if (argc != 2) {
-    fprintf(stderr,"usage: udpcli  hostname \n");
-    exit(1);
-  }
- 
+
+void *start_udp_cli(void *args){
+
+  char *host = (char*) args;
   int sockfd;
   struct addrinfo hints, *servinfo, *p;
   int rv, numbytes;
@@ -31,9 +29,9 @@ int main(int argc, char *argv[]){
   hints.ai_socktype = SOCK_DGRAM; // use UDP
   //hints.ai_flags = AI_PASSIVE;    // use this machines ip;
 
-  if((rv = getaddrinfo(argv[1], SERVPORT, &hints, &servinfo)) != 0){
+  if((rv = getaddrinfo(host, SERVPORT, &hints, &servinfo)) != 0){
     fprintf(stderr, "getaddrinfo %s\n", gai_strerror(rv));
-    return 1;
+    pthread_exit( (void *) -1);
   }
 
 
@@ -52,7 +50,7 @@ int main(int argc, char *argv[]){
 
   if(p == NULL){
     fprintf(stderr, "udpclient: failed to bind socket\n");
-    return -2;
+    pthread_exit( (void*) -2);
   }
 
   freeaddrinfo(servinfo);
@@ -79,12 +77,7 @@ int main(int argc, char *argv[]){
 
   close(sockfd);
 
-  
-  
-  
-  
- 
-  return 0;
+  pthread_exit( (void *) 0);
   
 }
 

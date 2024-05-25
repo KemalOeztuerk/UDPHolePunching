@@ -8,18 +8,19 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <pthread.h>
 
 #define PORT "9999"
 
 
- void *get_in_addr(struct sockaddr *sa){
+/*void *get_in_addr(struct sockaddr *sa){
    if(sa->sa_family == AF_INET)
      return &(((struct sockaddr_in*)sa)->sin_addr); // IPv4 address
    return &(((struct sockaddr_in6*)sa)->sin6_addr); // IPv6 address 
-  }
+   }*/
 
 
-int main(){
+void* start_udp_serv(){
 
   int sockfd;
   struct addrinfo hints, *servinfo, *p;
@@ -35,7 +36,7 @@ int main(){
 
   if((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0){
     fprintf(stderr, "getaddrinfo %s\n", gai_strerror(rv));
-    return -1;
+    pthread_exit((void *)-1);
   }
 
 
@@ -54,7 +55,7 @@ int main(){
 
   if(p == NULL){
     fprintf(stderr, "udpserver: failed to bind socket\n");
-    return 2;
+    pthread_exit( (void*) 2 );
   }
 
   freeaddrinfo(servinfo);
@@ -79,7 +80,7 @@ int main(){
   close(sockfd);
   
  
-  return 0;
+  pthread_exit( (void*)0);
   
 }
 
