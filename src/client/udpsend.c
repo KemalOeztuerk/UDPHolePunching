@@ -10,18 +10,21 @@
 #include <netdb.h>
 #include <pthread.h>
 
+#include "udpsend.h"
+
 #define SERVPORT "9999"
 
 
 
-void *start_udp_cli(void *args){
+void *start_send(void *args){
 
-  char *host = (char*) args;
+  hostinfo *hi = (hostinfo*)args;
   int sockfd;
   struct addrinfo hints, *servinfo, *p;
   int rv, numbytes;
+  char port_str [6];
   //char buf[INET6_ADDRSTRLEN]; // size is not important now
-  socklen_t addr_len;
+  //  socklen_t addr_len;
   // char s[INET6_ADDRSTRLEN];
 
   memset(&hints, 0, sizeof(hints));
@@ -29,7 +32,8 @@ void *start_udp_cli(void *args){
   hints.ai_socktype = SOCK_DGRAM; // use UDP
   //hints.ai_flags = AI_PASSIVE;    // use this machines ip;
 
-  if((rv = getaddrinfo(host, SERVPORT, &hints, &servinfo)) != 0){
+  snprintf(port_str, sizeof(port_str), "%u", hi->port);
+  if((rv = getaddrinfo(hi->hostname, port_str, &hints, &servinfo)) != 0){
     fprintf(stderr, "getaddrinfo %s\n", gai_strerror(rv));
     pthread_exit( (void *) -1);
   }
@@ -59,10 +63,10 @@ void *start_udp_cli(void *args){
 
 
 
-  char msg[1024] = "some message"; 
+  // char msg[1024] = "some message"; 
   while(1){
     
-  if((numbytes = sendto(sockfd, msg, 1024, 0, p->ai_addr, p->ai_addrlen)) == -1){
+  if((numbytes = sendto(sockfd, hi, 1024, 0, p->ai_addr, p->ai_addrlen)) == -1){
     perror("sendto");
     break;
     exit(1);

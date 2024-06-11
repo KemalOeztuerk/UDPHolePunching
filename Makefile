@@ -1,31 +1,41 @@
 CC = gcc
 CFLAGS = -g -Wall
 
-TARGET = punch
+CLIENT_TARGET = punch
+RENDEZVOUS_TARGET = rendezvous
 
 SRCDIR = src
 OBJDIR = obj
 BINDIR = bin
 
-SRCS = $(wildcard $(SRCDIR)/*.c)
-OBJS = $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SRCS))
+CLIENT_SRCS = $(wildcard $(SRCDIR)/client/*.c)
+RENDEZVOUS_SRCS = $(wildcard $(SRCDIR)/rendezvous/*.c)
 
+#SRCS = $(wildcard $(SRCDIR)/*.c)
+CLIENT_OBJS = $(patsubst $(SRCDIR)/client/%.c, $(OBJDIR)/client/%.o, $(CLIENT_SRCS))
+RENDEZVOUS_OBJS = $(patsubst $(SRCDIR)/rendezvous/%.c, $(OBJDIR)/rendezvous/%.o, $(RENDEZVOUS_SRCS))
 
-all: $(BINDIR)/$(TARGET)
+all: $(BINDIR)/$(CLIENT_TARGET) $(BINDIR)/$(RENDEZVOUS_TARGET)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.c | $(OBJDIR)
+# Object files
+$(OBJDIR)/client/%.o: $(SRCDIR)/client/%.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BINDIR)/$(TARGET): $(OBJS) | $(BINDIR)
+$(OBJDIR)/rendezvous/%.o: $(SRCDIR)/rendezvous/%.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Binaries
+$(BINDIR)/$(CLIENT_TARGET): $(CLIENT_OBJS)
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -o $@ $^
 
-$(OBJDIR):
-	mkdir -p $(OBJDIR)
+$(BINDIR)/$(RENDEZVOUS_TARGET): $(RENDEZVOUS_OBJS)
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -o $@ $^
 
-$(BINDIR):
-	mkdir -p $(BINDIR)
-
-clean:
-	rm -f $(OBJDIR)/*.o $(BINDIR)/$(TARGET)
+clean:	
+	rm -f $(OBJDIR)/client/*.o $(OBJDIR)/rendezvous/*.o $(BINDIR)/$(CLIENT_TARGET) $(BINDIR)/$(RENDEZVOUS_TARGET)
 
 .PHONY: all clean

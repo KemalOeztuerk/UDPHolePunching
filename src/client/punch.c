@@ -1,19 +1,28 @@
 
 #include <stdio.h>
 #include <pthread.h>
-#include "udpcli.h"
-#include "udpserv.h"
+#include <stdlib.h>
+#include <string.h>
+#include "udpsend.h"
+#include "udplisten.h"
 
 int main(int argc, char* argv[]){
 
 
-  if(argc != 2){
-    printf("usage: punch hostname\n");
+  if(argc != 3){
+    printf("usage: punch hostname port\n");
     return -1;
   }
   pthread_t cli_thread,serv_thread;
+  
+  //set host info
+  hostinfo *hi = malloc(sizeof(hostinfo));
+  //set hostname
+  memcpy(hi->hostname,argv[1], strlen(argv[1])+1 );
+  //set port
+  hi->port = (unsigned short)atoi(argv[2]);
 
-  if( pthread_create(&cli_thread, NULL, start_udp_cli, (void*)argv[1]) != 0){
+  if( pthread_create(&cli_thread, NULL, start_send, (void*)hi) != 0){
       fprintf(stderr, "Failed to create client thread\n");
       return -1;
     }
